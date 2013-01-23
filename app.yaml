@@ -1,0 +1,12 @@
+application: griddo
+version: 1
+runtime: go
+api_version: go1
+
+handlers:
+- url: /media/css
+  static_dir: media/css
+- url: /media/js
+  static_dir: media/js
+- url: /.*
+  script: _go_app
