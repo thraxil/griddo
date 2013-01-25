@@ -8,5 +8,7 @@ handlers:
   static_dir: media/css
 - url: /media/js
   static_dir: media/js
+- url: /test
+  static_dir: templates
 - url: /.*
   script: _go_app

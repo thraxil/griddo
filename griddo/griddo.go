@@ -1,11 +1,11 @@
 package griddo
 
 import (
-	"appengine"
+	_ "appengine"
 	"appengine/datastore"
-	"appengine/user"
+	_ "appengine/user"
 	"fmt"
-	"html/template"
+	_ "html/template"
 	"net/http"
 	"time"
 )
