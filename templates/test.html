@@ -15,9 +15,16 @@ text.active {
   fill: red;
 }
 
+svg {
+  border: solid 1px black;
+}
+
 </style>
 <script src="http://d3js.org/d3.v3.min.js"></script>
 
+</head>
+
+<body>
 <script>
 var margin = {top: 80, right: 0, bottom: 10, left: 80},
     width = 720,
@@ -36,9 +43,6 @@ var svg = d3.select("body").append("svg")
     ")");
 </script>
 
-</head>
-
-<body>
 
 </body>
 </html>
