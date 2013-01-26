@@ -1,24 +1,28 @@
 {
 "rows":[
-  {"label": "r1"},
-  {"label": "r2"},
-  {"label": "r3"},
-  {"label": "r4"},
-  {"label": "r5"},
-  {"label": "r6"},
-  {"label": "r7"},
-  {"label": "r8"}
+  {"label": "row 1"},
+  {"label": "row 2"},
+  {"label": "row 3"},
+  {"label": "row 4"},
+  {"label": "row 5"},
+  {"label": "row 6"},
+  {"label": "row 7"},
+  {"label": "row 8"}
 ],
 
 "columns":[
-  {"label": "c1"},
-  {"label": "c2"},
-  {"label": "c3"},
-  {"label": "c4"},
-  {"label": "c5"},
-  {"label": "c6"},
-  {"label": "c7"},
-  {"label": "c8"}
+  {"label": "column 1"},
+  {"label": "column 2"},
+  {"label": "column 3"},
+  {"label": "column 4"},
+  {"label": "column 5"},
+  {"label": "column 6"},
+  {"label": "column 7"},
+  {"label": "column 8"},
+  {"label": "column 9"},
+  {"label": "column 10"},
+  {"label": "column 11"},
+  {"label": "column 12"}
 ],
 
 "links":[
