@@ -16,17 +16,15 @@ var svg = d3.select("body").append("svg")
 
 d3.json("test.json", function(griddata) {
 	var matrix = [],
-		nodes = griddata.nodes,
 		rows = griddata.rows,
 		columns = griddata.columns,
 		nr = rows.length,
-		nc = columns.length,
-		n = nodes.length;
+		nc = columns.length;
 
   // Compute index per node.
-  nodes.forEach(function(node, i) {
+  rows.forEach(function(node, i) {
     node.index = i;
-    matrix[i] = d3.range(n).map(function(j) { return {x: j, y: i, z: 0}; });
+    matrix[i] = d3.range(nc).map(function(j) { return {x: j, y: i, z: 0}; });
   });
 
   // Convert links to matrix; count character occurrences.
@@ -35,7 +33,7 @@ d3.json("test.json", function(griddata) {
   });
 
   // The default sort order.
-  x.domain(d3.range(n));
+  x.domain(d3.range(nr));
 
   svg.append("rect")
       .attr("class", "background")
@@ -57,7 +55,7 @@ d3.json("test.json", function(griddata) {
       .attr("y", x.rangeBand() / 2)
       .attr("dy", ".32em")
       .attr("text-anchor", "end")
-      .text(function(d, i) { return nodes[i].name; });
+      .text(function(d, i) { return rows[i].label; });
 
   var column = svg.selectAll(".column")
       .data(matrix)
@@ -73,7 +71,7 @@ d3.json("test.json", function(griddata) {
       .attr("y", x.rangeBand() / 2)
       .attr("dy", ".32em")
       .attr("text-anchor", "start")
-      .text(function(d, i) { return nodes[i].name; });
+      .text(function(d, i) { return columns[i].label; });
 
   function row(row) {
     var cell = d3.select(this).selectAll(".cell")
@@ -84,7 +82,7 @@ d3.json("test.json", function(griddata) {
         .attr("width", x.rangeBand())
         .attr("height", x.rangeBand())
         .style("fill-opacity", function(d) { return z(d.z); })
-        .style("fill", function(d) { return nodes[d.x].group == nodes[d.y].group ? c(nodes[d.x].group) : null; })
+        .style("fill", function(d) { return null; })
         .on("mouseover", mouseover)
         .on("mouseout", mouseout);
   }
