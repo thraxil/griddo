@@ -1,0 +1,57 @@
+{
+"nodes":[
+  {"name":"A","group":1},
+  {"name":"B","group":1},
+  {"name":"C","group":1},
+  {"name":"D","group":1},
+  {"name":"E","group":1},
+  {"name":"F","group":1},
+  {"name":"G","group":1},
+  {"name":"H","group":1},
+  {"name":"I","group":1},
+  {"name":"J","group":1},
+  {"name":"K","group":1},
+  {"name":"L","group":1},
+  {"name":"M","group":1},
+  {"name":"N","group":1},
+  {"name":"O","group":1},
+  {"name":"P","group":1},
+  {"name":"Q","group":1},
+  {"name":"R","group":1},
+  {"name":"S","group":1},
+  {"name":"T","group":1},
+  {"name":"U","group":1},
+  {"name":"V","group":1},
+  {"name":"W","group":1},
+  {"name":"X","group":1},
+  {"name":"Y","group":1},
+  {"name":"Z","group":1}
+],
+
+"rows":[
+  {"label": "r1"},
+  {"label": "r2"},
+  {"label": "r3"},
+  {"label": "r4"},
+  {"label": "r5"},
+  {"label": "r6"},
+  {"label": "r7"},
+  {"label": "r8"}
+],
+
+"columns":[
+  {"label": "c1"},
+  {"label": "c2"},
+  {"label": "c3"},
+  {"label": "c4"},
+  {"label": "c5"},
+  {"label": "c6"},
+  {"label": "c7"},
+  {"label": "c8"}
+],
+
+"links":[
+  {"source": 1, "target": 2, "value":1},
+  {"source": 2, "target": 0, "value":1}
+]
+}
