@@ -1,4 +1,4 @@
-var margin = {top: 80, right: 0, bottom: 10, left: 120},
+var margin = {top: 80, right: 20, bottom: 10, left: 120},
     width = 720,
     height = 720;
 
@@ -72,6 +72,7 @@ d3.json("test.json", function(griddata) {
       .attr("y", y.rangeBand() / 2)
       .attr("dy", ".32em")
       .attr("text-anchor", "start")
+      .attr("transform", "rotate(25)")
       .text(function(d, i) { return columns[i].label; });
 
   function rowCreate(row) {
