@@ -37,10 +37,6 @@ d3.json("test.json", function(griddata) {
   svg.append("rect")
       .attr("class", "background")
       .attr("width", width)
-					.on("click", function(s) {
-								console.log("clicked on grid");
-								console.log(s);
-							})
       .attr("height", height);
 
   var row = svg.selectAll(".row")
@@ -48,7 +44,7 @@ d3.json("test.json", function(griddata) {
     .enter().append("g")
       .attr("class", "row")
       .attr("transform", function(d, i) { return "translate(0," + x(i) + ")"; })
-      .each(row);
+      .each(rowCreate);
 
   row.append("line")
       .attr("x2", width);
@@ -78,29 +74,30 @@ d3.json("test.json", function(griddata) {
       .attr("text-anchor", "start")
       .text(function(d, i) { return columns[i].label; });
 
-  function row(row) {
+  function rowCreate(row) {
     var cell = d3.select(this).selectAll(".cell")
-        .data(row.filter(function(d) { return d.z; }))
-      .enter().append("rect")
-        .attr("class", "cell")
-        .attr("x", function(d) { return y(d.x); })
-        .attr("width", y.rangeBand())
-        .attr("height", x.rangeBand())
-        .style("fill-opacity", function(d) { return z(d.z); })
-        .style("fill", function(d) { return null; })
-        .on("mouseover", mouseover)
-    		.on("click", function(d) {
-							console.log(d);
-							matrix[d.x][d.y] = 0;
-							d.z = 0;
-				})
-        .on("mouseout", mouseout);
+      .data(row);
+    cell.enter().append("rect")
+      .attr("class", "cell")
+      .attr("x", function(d) { return y(d.x); })
+      .attr("width", y.rangeBand())
+      .attr("height", x.rangeBand())
+      .on("mouseover", mouseover)
+      .on("click", function(d, i) {
+					d.z += 1;
+					d.z %= 5;
+					cell.style("fill-opacity", function(d) { return z(d.z); });
+					cell.style("fill", function(d) { return c(d.z); });
+			})
+      .on("mouseout", mouseout);
+     cell
+      .style("fill-opacity", function(d) { return z(d.z); })
+      .style("fill", function(d) { return c(d.z); });
   }
 
   function mouseover(p) {
     d3.selectAll(".row text").classed("active", function(d, i) { return i == p.y; });
     d3.selectAll(".column text").classed("active", function(d, i) { return i == p.x; });
-    console.log("over ", p.x, ",", p.y);
   }
 
   function mouseout() {

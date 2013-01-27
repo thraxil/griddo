@@ -7,6 +7,21 @@
   {"label": "row 5"},
   {"label": "row 6"},
   {"label": "row 7"},
+  {"label": "row 5"},
+  {"label": "row 6"},
+  {"label": "row 7"},
+  {"label": "row 5"},
+  {"label": "row 6"},
+  {"label": "row 7"},
+  {"label": "row 5"},
+  {"label": "row 6"},
+  {"label": "row 7"},
+  {"label": "row 5"},
+  {"label": "row 6"},
+  {"label": "row 7"},
+  {"label": "row 5"},
+  {"label": "row 6"},
+  {"label": "row 7"},
   {"label": "row 8"}
 ],
 
@@ -22,11 +37,24 @@
   {"label": "column 9"},
   {"label": "column 10"},
   {"label": "column 11"},
+  {"label": "column 9"},
+  {"label": "column 10"},
+  {"label": "column 11"},
+  {"label": "column 9"},
+  {"label": "column 10"},
+  {"label": "column 11"},
+  {"label": "column 9"},
+  {"label": "column 10"},
+  {"label": "column 11"},
+  {"label": "column 9"},
+  {"label": "column 10"},
+  {"label": "column 11"},
   {"label": "column 12"}
 ],
 
 "links":[
   {"source": 1, "target": 2, "value":1},
-  {"source": 2, "target": 0, "value":1}
+  {"source": 2, "target": 0, "value":1},
+  {"source": 4, "target": 0, "value":0}
 ]
 }
