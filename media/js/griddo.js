@@ -97,7 +97,9 @@ d3.json("test.json", function(griddata) {
 
   function mouseover(p) {
     d3.selectAll(".row text").classed("active", function(d, i) { return i == p.y; });
+    d3.selectAll(".row line").classed("active", function(d, i) { return i == p.y || i == p.y + 1; });
     d3.selectAll(".column text").classed("active", function(d, i) { return i == p.x; });
+    d3.selectAll(".column line").classed("active", function(d, i) { return i == p.x || i == p.x + 1; });
   }
 
   function mouseout() {
