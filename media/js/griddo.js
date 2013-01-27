@@ -104,6 +104,7 @@ d3.json("test.json", function(griddata) {
 
   function mouseout() {
     d3.selectAll("text").classed("active", false);
+    d3.selectAll("line").classed("active", false);
   }
 
 });
