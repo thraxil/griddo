@@ -15,97 +15,141 @@ var svg = d3.select("body").append("svg")
     .attr("transform", "translate(" + margin.left + "," + margin.top +
     ")");
 
-d3.json("test.json", function(griddata) {
-	var matrix = [],
-		rows = griddata.rows,
-		columns = griddata.columns,
-		nr = rows.length,
-		nc = columns.length;
+var matrix = [],
+rows = [],
+columns = [],
+nr = 0,
+nc = 0;
 
-  // Compute index per node.
-  rows.forEach(function(node, i) {
-    matrix[i] = d3.range(nc).map(function(j) { return {x: j, y: i, z: 0}; });
-  });
+var addCell = function(link) {
+    matrix[link.row][link.col].z += link.value;
+};
 
-  griddata.links.forEach(function(link) {
-    matrix[link.source][link.target].z += link.value;
-  });
+var setCell = function(link) {
+		if (link.row > nr || link.col > nc) {
+				console.log("out of bounds!");
+				return
+		}
+    matrix[link.row][link.col].z += link.value;
+    var cell = d3.selectAll(".cell")
+				.transition()
+				.duration(500)
+				.style("fill-opacity", function(d) { return z(d.z); })
+				.style("fill", function(d) { return c(d.z); });
+}
 
-  x.domain(d3.range(nr));
-  y.domain(d3.range(nc));
-
-  svg.append("rect")
-      .attr("class", "background")
-      .attr("width", width)
-      .attr("height", height);
-
-  var row = svg.selectAll(".row")
-      .data(matrix)
-    .enter().append("g")
-      .attr("class", "row")
-      .attr("transform", function(d, i) { return "translate(0," + x(i) + ")"; })
-      .each(rowCreate);
-
-  row.append("line")
-      .attr("x2", width);
-
-  row.append("text")
-      .attr("x", -6)
-      .attr("y", x.rangeBand() / 2)
-      .attr("dy", ".32em")
-      .attr("text-anchor", "end")
-      .text(function(d, i) { return rows[i].label; });
-
-  var column = svg.selectAll(".column")
-					.data(function (d, i) {
-							return matrix[i];
-						})
-    .enter().append("g")
-      .attr("class", "column")
-      .attr("transform", function(d, i) { return "translate(" + y(i) + ")rotate(-90)"; });
-
-  column.append("line")
-      .attr("x1", -width);
-
-  column.append("text")
-      .attr("x", 6)
-      .attr("y", y.rangeBand() / 2)
-      .attr("dy", ".32em")
-      .attr("text-anchor", "start")
-      .attr("transform", "rotate(25)")
-      .text(function(d, i) { return columns[i].label; });
-
-  function rowCreate(row) {
+function rowCreate(row) {
     var cell = d3.select(this).selectAll(".cell")
-      .data(row);
+				.data(row);
     cell.enter().append("rect")
-      .attr("class", "cell")
-      .attr("x", function(d) { return y(d.x); })
-      .attr("width", y.rangeBand())
-      .attr("height", x.rangeBand())
-      .on("mouseover", mouseover)
-      .on("click", function(d, i) {
-					d.z += 1;
-					d.z %= 5;
-					cell.style("fill-opacity", function(d) { return z(d.z); });
-					cell.style("fill", function(d) { return c(d.z); });
-			})
-      .on("mouseout", mouseout);
-     cell
-      .style("fill-opacity", function(d) { return z(d.z); })
-      .style("fill", function(d) { return c(d.z); });
-  }
+				.attr("class", "cell")
+				.attr("x", function(d) { return y(d.x); })
+				.attr("width", y.rangeBand())
+				.attr("height", x.rangeBand())
+				.on("mouseover", mouseover)
+				.on("click", function(d, i) {
+						d.z += 1;
+						d.z %= 5;
+						cell.style("fill-opacity", function(d) { return z(d.z); });
+						cell.style("fill", function(d) { return c(d.z); });
+				})
+				.on("mouseout", mouseout);
+    cell
+				.style("fill-opacity", function(d) { return z(d.z); })
+				.style("fill", function(d) { return c(d.z); });
+}
 
-  function mouseover(p) {
-    d3.selectAll(".row text").classed("active", function(d, i) { return i == p.y; });
-    d3.selectAll(".row line").classed("active", function(d, i) { return i == p.y || i == p.y + 1; });
-    d3.selectAll(".column text").classed("active", function(d, i) { return i == p.x; });
-    d3.selectAll(".column line").classed("active", function(d, i) { return i == p.x || i == p.x + 1; });
-  }
+function mouseover(p) {
+    d3.selectAll(".row text")
+				.classed("active", function(d, i) {
+						return i == p.y; });
+    d3.selectAll(".row line")
+				.classed("active", function(d, i) {
+						return i == p.y || i == p.y + 1; });
+    d3.selectAll(".column text")
+				.classed("active", function(d, i) {
+						return i == p.x; });
+    d3.selectAll(".column line")
+				.classed("active", function(d, i) {
+						return i == p.x || i == p.x + 1; });
+}
 
-  function mouseout() {
+function mouseout() {
     d3.selectAll("text").classed("active", false);
     d3.selectAll("line").classed("active", false);
-  }
+}
 
-});
+function dataUpdate() {
+		var row = svg.selectAll(".row")
+				.data(matrix);
+
+		var g = row.enter().append("g");
+		g
+				.attr("class", "row")
+				.attr("transform", function(d, i) { return "translate(0," + x(i) + ")"; })
+				.each(rowCreate);
+
+		g.append("line")
+				.attr("x2", width);
+
+		g.append("text")
+				.attr("x", -6)
+				.attr("y", x.rangeBand() / 2)
+				.attr("dy", ".32em")
+				.attr("text-anchor", "end")
+				.text(function(d, i) { return rows[i].label; });
+
+}
+
+function update(griddata) {
+		rows = griddata.rows;
+		columns = griddata.columns;
+		nr = rows.length;
+		nc = columns.length;
+
+		// Compute index per node.
+		rows.forEach(function(node, i) {
+				matrix[i] = d3.range(nc).map(function(j) { return {x: j, y: i, z: 0}; });
+		});
+
+		x.domain(d3.range(nr));
+		y.domain(d3.range(nc));
+
+		svg.append("rect")
+				.attr("class", "background")
+				.attr("width", width)
+				.attr("height", height);
+
+		dataUpdate();
+
+		var column = svg.selectAll(".column")
+				.data(function (d, i) {
+						return matrix[i];
+				})
+				.enter().append("g")
+				.attr("class", "column")
+				.attr("transform", function(d, i) { return "translate(" + y(i) + ")rotate(-90)"; });
+
+		column.append("line")
+				.attr("x1", -width);
+
+		column.append("text")
+				.attr("x", 6)
+				.attr("y", y.rangeBand() / 2)
+				.attr("dy", ".32em")
+				.attr("text-anchor", "start")
+				.attr("transform", "rotate(25)")
+				.text(function(d, i) { return columns[i].label; });
+
+		griddata.links.forEach(setCell);
+};
+
+
+d3.json("test.json", update);
+
+setInterval(function () {
+		var row = parseInt(nr * Math.random(), 10);
+		var col = parseInt(nc * Math.random(), 10);
+		var v = parseInt(5 * Math.random());
+		setCell({"row": row, "col": col, "value": v});
+}, 3000);
