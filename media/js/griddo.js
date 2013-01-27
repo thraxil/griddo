@@ -17,7 +17,6 @@ var svg = d3.select("body").append("svg")
 
 d3.json("test.json", function(griddata) {
 	var matrix = [],
-		cmatrix = [],
 		rows = griddata.rows,
 		columns = griddata.columns,
 		nr = rows.length,
@@ -26,9 +25,6 @@ d3.json("test.json", function(griddata) {
   // Compute index per node.
   rows.forEach(function(node, i) {
     matrix[i] = d3.range(nc).map(function(j) { return {x: j, y: i, z: 0}; });
-  });
-  columns.forEach(function(node, i) {
-    cmatrix[i] = d3.range(nr).map(function(j) { return {x: j, y: i, z: 0}; });
   });
 
   griddata.links.forEach(function(link) {
@@ -65,7 +61,9 @@ d3.json("test.json", function(griddata) {
       .text(function(d, i) { return rows[i].label; });
 
   var column = svg.selectAll(".column")
-      .data(cmatrix)
+					.data(function (d, i) {
+							return matrix[i];
+						})
     .enter().append("g")
       .attr("class", "column")
       .attr("transform", function(d, i) { return "translate(" + y(i) + ")rotate(-90)"; });
@@ -91,8 +89,10 @@ d3.json("test.json", function(griddata) {
         .style("fill-opacity", function(d) { return z(d.z); })
         .style("fill", function(d) { return null; })
         .on("mouseover", mouseover)
-    		.on("click", function(c) {
-					console.log(c);
+    		.on("click", function(d) {
+							console.log(d);
+							matrix[d.x][d.y] = 0;
+							d.z = 0;
 				})
         .on("mouseout", mouseout);
   }
