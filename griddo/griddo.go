@@ -67,16 +67,74 @@ func cellUpdate(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "bad request", 404)
 		return
 	}
-	//	gridkey := parts[2]
-	//	k := datastore.NewKey(ctx, "Grid", gridkey, 0, nil)
+	gridkey := parts[2]
+	k := datastore.NewKey(ctx, "Grid", gridkey, 0, nil)
 	//	g := new(Grid)
 
 	ridx, _ := strconv.Atoi(parts[3])
 	cidx, _ := strconv.Atoi(parts[4])
 
 	v, _ := strconv.Atoi(r.FormValue("v"))
-	ctx.Errorf("value: %v", r.FormValue("v"))
 	ctx.Errorf("setting cell (%d,%d) to %d", ridx, cidx, v)
+
+	rq := datastore.NewQuery(
+		"Row").Filter("Grid=",
+		k).Filter("DisplayOrder=",
+		ridx-1).Limit(1)
+
+	rows := make([]Row, 0, 1)
+	rkeys, err := rq.GetAll(ctx, &rows)
+	if err != nil {
+		ctx.Errorf("rows fetch: %v", err)
+		fmt.Fprint(w, "not ok")
+		return
+	}
+
+	cq := datastore.NewQuery(
+		"Col").Filter("Grid=",
+		k).Filter("DisplayOrder=",
+		cidx-1).Limit(1)
+
+	cols := make([]Col, 0, 1)
+	ckeys, err := cq.GetAll(ctx, &cols)
+	if err != nil {
+		// handle the error
+		ctx.Errorf("cols fetch: %v", err)
+		fmt.Fprint(w, "not ok")
+		return
+	}
+
+	cellq := datastore.NewQuery(
+		"Cell").Filter("Row=", rkeys[0]).Filter("Col=", ckeys[0]).Limit(1)
+	cells := make([]Cell, 0, 1)
+	cellkeys, err := cellq.GetAll(ctx, &cells)
+	if err != nil {
+		ctx.Errorf("cells fetch: %v", err)
+		fmt.Fprintf(w, "not ok")
+		return
+	}
+	if len(cells) > 0 {
+		if v != 0 {
+			cells[0].Value = v
+			_, err = datastore.Put(ctx, cellkeys[0], &cells[0])
+			if err != nil {
+				ctx.Errorf("error saving: %v", err)
+			}
+		} else {
+			// value is zero, so delete it
+		}
+	} else {
+		if v != 0 {
+			ck := datastore.NewKey(ctx, "Cell", newKey(), 0, nil)
+			cell := new(Cell)
+			cell.Row = rkeys[0]
+			cell.Col = ckeys[0]
+			cell.Value = v
+			datastore.Put(ctx, ck, cell)
+		}
+		// value == 0, do nothing
+	}
+
 	fmt.Fprint(w, "ok")
 }
 

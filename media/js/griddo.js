@@ -55,6 +55,9 @@ function rowCreate(row) {
 						var xmlHttp = new XMLHttpRequest();
 						var url = "/cellupdate/" + gridKey + "/" + d.y + "/" + d.x + "/";
 						xmlHttp.open("POST", url, true);
+						xmlHttp.setRequestHeader(
+								"Content-type",
+								"application/x-www-form-urlencoded");
 						xmlHttp.send("v=" + d.z);
 						console.log("v=" + d.z);
 				})
