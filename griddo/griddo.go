@@ -27,7 +27,7 @@ type Row struct {
 }
 
 func (r Row) Index() int {
-	return r.DisplayOrder + 1
+	return r.DisplayOrder
 }
 
 type Col struct {
@@ -37,7 +37,7 @@ type Col struct {
 }
 
 func (c Col) Index() int {
-	return c.DisplayOrder + 1
+	return c.DisplayOrder
 }
 
 type Cell struct {
@@ -89,7 +89,7 @@ func cellUpdate(w http.ResponseWriter, r *http.Request) {
 	rq := datastore.NewQuery(
 		"Row").Filter("Grid=",
 		k).Filter("DisplayOrder=",
-		ridx-1).Limit(1)
+		ridx).Limit(1)
 
 	rows := make([]Row, 0, 1)
 	rkeys, err := rq.GetAll(ctx, &rows)
@@ -102,7 +102,7 @@ func cellUpdate(w http.ResponseWriter, r *http.Request) {
 	cq := datastore.NewQuery(
 		"Col").Filter("Grid=",
 		k).Filter("DisplayOrder=",
-		cidx-1).Limit(1)
+		cidx).Limit(1)
 
 	cols := make([]Col, 0, 1)
 	ckeys, err := cq.GetAll(ctx, &cols)
