@@ -180,7 +180,7 @@ func newGrid(w http.ResponseWriter, r *http.Request) {
 		rkey := datastore.NewKey(c, "Row", newKey(), 0, nil)
 		row := new(Row)
 		row.Grid = k
-		row.Label = r
+		row.Label = strings.TrimSpace(r)
 		row.DisplayOrder = i
 		_, err := datastore.Put(c, rkey, row)
 		c.Errorf("added row %v", err)
@@ -189,7 +189,7 @@ func newGrid(w http.ResponseWriter, r *http.Request) {
 		ckey := datastore.NewKey(c, "Col", newKey(), 0, nil)
 		col := new(Col)
 		col.Grid = k
-		col.Label = co
+		col.Label = strings.TrimSpace(co)
 		col.DisplayOrder = i
 		_, err := datastore.Put(c, ckey, col)
 		c.Errorf("added col %v", err)
