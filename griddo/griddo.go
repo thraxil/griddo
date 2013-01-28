@@ -227,7 +227,9 @@ func cellUpdate(w http.ResponseWriter, r *http.Request) {
 
 func index(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
-	var indexTemplate = template.Must(template.New("index").Parse(indexTmpl))
+
+	indexTemplate := template.Must(
+		template.ParseFiles("templates/index.html"))
 
 	err := indexTemplate.Execute(w, map[string]string{})
 	if err != nil {
@@ -342,81 +344,11 @@ func showGrid(w http.ResponseWriter, r *http.Request) {
 		vcells = append(vcells, vcell{cell, fr, fc, fr.DisplayOrder, fc.DisplayOrder})
 	}
 
-	var gridTemplate = template.Must(template.New("grid").Parse(gridTmpl))
+	gridTemplate := template.Must(
+		template.ParseFiles("templates/grid.html"))
 
 	err = gridTemplate.Execute(w, gridPage{g, gridkey, rows, cols, vcells})
 	if err != nil {
 		c.Errorf("gridTemplate: %v", err)
 	}
 }
-
-var gridTmpl = `
-<html>
-<head>
-<title>d3 testing</title>
-<style>
-
-.background {
-  fill: #eee;
-}
-
-line {
-  stroke: #fff;
-}
-
-text.active {
-  fill: red;
-}
-
-line.active {
-  stroke: #ccc;
-}
-
-</style>
-<script src="http://d3js.org/d3.v3.min.js"></script>
-
-<script>
-var rows = [];
-{{range .Rows}}
-rows.push("{{.Label}}");{{end}}
-var columns = [];
-{{range .Cols}}
-columns.push("{{.Label}}");{{end}}
-
-var cells = [];
-{{range .Cells}}
-cells.push({"row": {{.Row.Index}}, "col": {{.Col.Index}}, "value": {{.Cell.Value}}});{{end}}
-
-var gridKey = "{{.GridKey}}";
-</script>
-</head>
-
-<body>
-<h2>{{.Grid.Title}}</h2>
-<script src="/media/js/griddo.js"></script>
-
-	<form action="/add_row/{{.GridKey}}" method="post">
-  <input type="text" name="label" placeholder="row label"/><input type="submit" value="add row" />
-	</form>
-	<form action="/add_col/{{.GridKey}}" method="post">
-  <input type="text" name="label" placeholder="column label"/><input type="submit" value="add column" />
-	</form>
-</body>
-</html>
-
-`
-
-var indexTmpl = `<html>
-	<head>
-		<title>Griddo</title>
-	</head>
-	<body>
-		<form action="/new/" method="post">
-			<input type="text" name="title" placeholder="title" /><br />
-			<textarea name="rows" rows="5" cols="50" placeholder="row labels. one per line"></textarea><br />
-			<textarea name="cols" rows="5" cols="50" placeholder="columns labels. one per line"></textarea><br />
-			<input type="submit" value="new grid" />
-		</form>
-	</body>
-</html>
-`
