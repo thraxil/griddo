@@ -16,6 +16,7 @@ import (
 type Grid struct {
 	//	Owner string
 	Title string
+	Id string
 	//	Created  time.Time
 	//	Modified time.Time
 }
@@ -79,9 +80,8 @@ func addRow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	gridkey := parts[2]
-	k := datastore.NewKey(ctx, "Grid", gridkey, 0, nil)
-
-	rq := datastore.NewQuery("Row").Filter("Grid=", k).Order("DisplayOrder")
+	k := datastore.NewKey(ctx, "grid", gridkey, 0, nil)
+	rq := datastore.NewQuery("row").Filter("Grid=", k).Order("DisplayOrder")
 	rows := make([]Row, 0, 100)
 	_, err := rq.GetAll(ctx, &rows)
 	if err != nil {
@@ -95,7 +95,7 @@ func addRow(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	rkey := datastore.NewKey(ctx, "Row", newKey(), 0, nil)
+	rkey := datastore.NewKey(ctx, "row", newKey(), 0, nil)
 	row := new(Row)
 	row.Grid = k
 	row.Label = strings.TrimSpace(r.FormValue("label"))
@@ -114,9 +114,9 @@ func addCol(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	gridkey := parts[2]
-	k := datastore.NewKey(ctx, "Grid", gridkey, 0, nil)
+	k := datastore.NewKey(ctx, "grid", gridkey, 0, nil)
 
-	cq := datastore.NewQuery("Col").Filter("Grid=", k).Order("DisplayOrder")
+	cq := datastore.NewQuery("col").Filter("Grid=", k).Order("DisplayOrder")
 	cols := make([]Col, 0, 100)
 	_, err := cq.GetAll(ctx, &cols)
 	if err != nil {
@@ -130,7 +130,7 @@ func addCol(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	ckey := datastore.NewKey(ctx, "Col", newKey(), 0, nil)
+	ckey := datastore.NewKey(ctx, "col", newKey(), 0, nil)
 	col := new(Col)
 	col.Grid = k
 	col.Label = strings.TrimSpace(r.FormValue("label"))
@@ -149,7 +149,7 @@ func cellUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	gridkey := parts[2]
-	k := datastore.NewKey(ctx, "Grid", gridkey, 0, nil)
+	k := datastore.NewKey(ctx, "grid", gridkey, 0, nil)
 	//	g := new(Grid)
 
 	ridx, _ := strconv.Atoi(parts[3])
@@ -159,7 +159,7 @@ func cellUpdate(w http.ResponseWriter, r *http.Request) {
 	ctx.Errorf("setting cell (%d,%d) to %d", ridx, cidx, v)
 
 	rq := datastore.NewQuery(
-		"Row").Filter("Grid=",
+		"row").Filter("Grid=",
 		k).Filter("DisplayOrder=",
 		ridx).Limit(1)
 
@@ -172,7 +172,7 @@ func cellUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cq := datastore.NewQuery(
-		"Col").Filter("Grid=",
+		"col").Filter("Grid=",
 		k).Filter("DisplayOrder=",
 		cidx).Limit(1)
 
@@ -186,7 +186,7 @@ func cellUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cellq := datastore.NewQuery(
-		"Cell").Filter("Grid=", k).Filter(
+		"cell").Filter("Grid=", k).Filter(
 		"Row=", rkeys[0]).Filter("Col=", ckeys[0]).Limit(1)
 	cells := make([]Cell, 0, 1)
 	cellkeys, err := cellq.GetAll(ctx, &cells)
@@ -211,7 +211,7 @@ func cellUpdate(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		if v != 0 {
-			ck := datastore.NewKey(ctx, "Cell", newKey(), 0, nil)
+			ck := datastore.NewKey(ctx, "cell", newKey(), 0, nil)
 			cell := new(Cell)
 			cell.Grid = k
 			cell.Row = rkeys[0]
@@ -242,15 +242,16 @@ func newGrid(w http.ResponseWriter, r *http.Request) {
 	rows := strings.Split(r.FormValue("rows"), "\n")
 	cols := strings.Split(r.FormValue("cols"), "\n")
 	key := newKey()
-	k := datastore.NewKey(c, "Grid", key, 0, nil)
+	k := datastore.NewKey(c, "grid", key, 0, nil)
 	g := new(Grid)
+	g.Id = key
 	g.Title = title
 	_, err := datastore.Put(c, k, g)
 	if err != nil {
 		c.Errorf("error adding grid: %v", err)
 	}
 	for i, r := range rows {
-		rkey := datastore.NewKey(c, "Row", newKey(), 0, nil)
+		rkey := datastore.NewKey(c, "row", newKey(), 0, nil)
 		row := new(Row)
 		row.Grid = k
 		row.Label = strings.TrimSpace(r)
@@ -259,7 +260,7 @@ func newGrid(w http.ResponseWriter, r *http.Request) {
 		c.Errorf("added row %v", err)
 	}
 	for i, co := range cols {
-		ckey := datastore.NewKey(c, "Col", newKey(), 0, nil)
+		ckey := datastore.NewKey(c, "col", newKey(), 0, nil)
 		col := new(Col)
 		col.Grid = k
 		col.Label = strings.TrimSpace(co)
@@ -289,6 +290,18 @@ type gridPage struct {
 
 var gridTemplate = template.Must(template.New("grid").Parse(gridTmpl))
 
+func getGrid(ctx appengine.Context, key string) (*datastore.Key, *Grid, error) {
+	gq := datastore.NewQuery("grid").Filter("Id=",key).Limit(1)
+	grids := make([]Grid, 0, 1)
+	gridkeys, err := gq.GetAll(ctx, &grids)
+	ctx.Errorf("keys found: %v", gridkeys)
+	ctx.Errorf("grids: %v", grids)
+	if err == nil {
+		return gridkeys[0], &grids[0], err
+	}
+	return nil, nil, err
+}
+
 func showGrid(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
 	parts := strings.Split(r.URL.String(), "/")
@@ -297,9 +310,8 @@ func showGrid(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	gridkey := parts[2]
-	k := datastore.NewKey(c, "Grid", gridkey, 0, nil)
-	g := new(Grid)
-	err := datastore.Get(c, k, g)
+	k, g, err := getGrid(c, gridkey)
+
 	if err != nil {
 		http.Error(w, "Couldn't load Grid", http.StatusInternalServerError)
 		c.Errorf("setting up: %v", err)
@@ -308,7 +320,7 @@ func showGrid(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rowmap := make(map[string]Row)
-	rq := datastore.NewQuery("Row").Filter("Grid=", k).Order("DisplayOrder")
+	rq := datastore.NewQuery("row").Filter("Grid=", k).Order("DisplayOrder")
 	rows := make([]Row, 0, 100)
 	rkeys, err := rq.GetAll(c, &rows)
 	if err != nil {
@@ -320,7 +332,7 @@ func showGrid(w http.ResponseWriter, r *http.Request) {
 	}
 
 	colmap := make(map[string]Col)
-	cq := datastore.NewQuery("Col").Filter("Grid=", k).Order("DisplayOrder")
+	cq := datastore.NewQuery("col").Filter("Grid=", k).Order("DisplayOrder")
 	cols := make([]Col, 0, 100)
 	ckeys, err := cq.GetAll(c, &cols)
 	if err != nil {
@@ -331,7 +343,7 @@ func showGrid(w http.ResponseWriter, r *http.Request) {
 		colmap[ck.String()] = cols[i]
 	}
 
-	cellq := datastore.NewQuery("Cell").Filter("Grid=", k).Limit(100 * 100)
+	cellq := datastore.NewQuery("cell").Filter("Grid=", k).Limit(100 * 100)
 	cells := make([]Cell, 0, 100*100)
 	vcells := make([]vcell, 0, 100*100)
 

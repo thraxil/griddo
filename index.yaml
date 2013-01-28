@@ -15,7 +15,37 @@ indexes:
   - name: Grid
   - name: DisplayOrder
 
+- kind: Col
+  properties:
+  - name: grid
+  - name: DisplayOrder
+
 - kind: Row
   properties:
   - name: Grid
+  - name: DisplayOrder
+
+- kind: Row
+  properties:
+  - name: grid
+  - name: DisplayOrder
+
+- kind: col
+  properties:
+  - name: Grid
+  - name: DisplayOrder
+
+- kind: col
+  properties:
+  - name: grid
+  - name: DisplayOrder
+
+- kind: row
+  properties:
+  - name: Grid
+  - name: DisplayOrder
+
+- kind: row
+  properties:
+  - name: grid
   - name: DisplayOrder
