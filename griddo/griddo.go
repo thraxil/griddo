@@ -225,11 +225,11 @@ func cellUpdate(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "ok")
 }
 
+var indexTemplate = template.Must(
+	template.ParseFiles("templates/index.html"))
+
 func index(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
-
-	indexTemplate := template.Must(
-		template.ParseFiles("templates/index.html"))
 
 	err := indexTemplate.Execute(w, map[string]string{})
 	if err != nil {
@@ -288,6 +288,9 @@ type gridPage struct {
 	Cells   []vcell
 }
 
+var gridTemplate = template.Must(
+	template.ParseFiles("templates/grid.html"))
+
 func showGrid(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
 	parts := strings.Split(r.URL.String(), "/")
@@ -343,9 +346,6 @@ func showGrid(w http.ResponseWriter, r *http.Request) {
 		var fc = colmap[cell.Col.String()]
 		vcells = append(vcells, vcell{cell, fr, fc, fr.DisplayOrder, fc.DisplayOrder})
 	}
-
-	gridTemplate := template.Must(
-		template.ParseFiles("templates/grid.html"))
 
 	err = gridTemplate.Execute(w, gridPage{g, gridkey, rows, cols, vcells})
 	if err != nil {
