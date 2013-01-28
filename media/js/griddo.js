@@ -15,11 +15,11 @@ var svg = d3.select("body").append("svg")
     .attr("transform", "translate(" + margin.left + "," + margin.top +
     ")");
 
-var matrix = [],
-rows = [],
-columns = [],
-nr = 0,
-nc = 0;
+var matrix = [];
+//rows = [],
+//columns = [],
+var nr = 0;
+var nc = 0;
 
 var addCell = function(link) {
     matrix[link.row][link.col].z += link.value;
@@ -52,6 +52,11 @@ function rowCreate(row) {
 						d.z %= 5;
 						cell.style("fill-opacity", function(d) { return z(d.z); });
 						cell.style("fill", function(d) { return c(d.z); });
+						var xmlHttp = new XMLHttpRequest();
+						var url = "/cellupdate/" + gridKey + "/" + d.y + "/" + d.x + "/";
+						xmlHttp.open("POST", url, true);
+						xmlHttp.send("v=" + d.z);
+						console.log("v=" + d.z);
 				})
 				.on("mouseout", mouseout);
     cell
@@ -97,13 +102,11 @@ function dataUpdate() {
 				.attr("y", x.rangeBand() / 2)
 				.attr("dy", ".32em")
 				.attr("text-anchor", "end")
-				.text(function(d, i) { return rows[i].label; });
+				.text(function(d, i) { return rows[i]; });
 
 }
 
-function update(griddata) {
-		rows = griddata.rows;
-		columns = griddata.columns;
+function update() {
 		nr = rows.length;
 		nc = columns.length;
 
@@ -139,13 +142,15 @@ function update(griddata) {
 				.attr("dy", ".32em")
 				.attr("text-anchor", "start")
 				.attr("transform", "rotate(25)")
-				.text(function(d, i) { return columns[i].label; });
+				.text(function(d, i) { return columns[i]; });
 
-		griddata.links.forEach(setCell);
+//		griddata.links.forEach(setCell);
 };
 
 
-d3.json("test.json", update);
+//d3.json("/test/test.json", update);
+
+update();
 
 setInterval(function () {
 		var row = parseInt(nr * Math.random(), 10);
