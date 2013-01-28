@@ -226,7 +226,7 @@ func cellUpdate(w http.ResponseWriter, r *http.Request) {
 }
 
 var indexTemplate = template.Must(
-	template.ParseFiles("templates/index.html"))
+	template.ParseFiles("./templates/index.html"))
 
 func index(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
@@ -289,7 +289,7 @@ type gridPage struct {
 }
 
 var gridTemplate = template.Must(
-	template.ParseFiles("templates/grid.html"))
+	template.ParseFiles("./templates/grid.html"))
 
 func showGrid(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
