@@ -122,6 +122,10 @@ func cellUpdate(w http.ResponseWriter, r *http.Request) {
 			}
 		} else {
 			// value is zero, so delete it
+			err = datastore.Delete(ctx, cellkeys[0])
+			if err != nil {
+				ctx.Errorf("error deleting: %v", err)
+			}
 		}
 	} else {
 		if v != 0 {
