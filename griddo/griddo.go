@@ -67,6 +67,78 @@ func init() {
 	http.HandleFunc("/new/", newGrid)
 	http.HandleFunc("/grid/", showGrid)
 	http.HandleFunc("/cellupdate/", cellUpdate)
+	http.HandleFunc("/add_row/", addRow)
+	http.HandleFunc("/add_col/", addCol)
+}
+
+func addRow(w http.ResponseWriter, r *http.Request) {
+	ctx := appengine.NewContext(r)
+	parts := strings.Split(r.URL.String(), "/")
+	if len(parts) < 3 {
+		http.Error(w, "bad request", 404)
+		return
+	}
+	gridkey := parts[2]
+	k := datastore.NewKey(ctx, "Grid", gridkey, 0, nil)
+
+	rq := datastore.NewQuery("Row").Filter("Grid=", k).Order("DisplayOrder")
+	rows := make([]Row, 0, 100)
+	_, err := rq.GetAll(ctx, &rows)
+	if err != nil {
+		// handle the error
+		ctx.Errorf("rows fetch: %v", err)
+	}
+	var maxOrder = 0
+	for _, row := range rows {
+		if row.DisplayOrder > maxOrder {
+			maxOrder = row.DisplayOrder
+		}
+	}
+
+	rkey := datastore.NewKey(ctx, "Row", newKey(), 0, nil)
+	row := new(Row)
+	row.Grid = k
+	row.Label = strings.TrimSpace(r.FormValue("label"))
+	row.DisplayOrder = maxOrder + 1
+	_, err = datastore.Put(ctx, rkey, row)
+	ctx.Errorf("added row %v", err)
+
+	http.Redirect(w, r, "/grid/"+gridkey, http.StatusFound)
+}
+
+func addCol(w http.ResponseWriter, r *http.Request) {
+	ctx := appengine.NewContext(r)
+	parts := strings.Split(r.URL.String(), "/")
+	if len(parts) < 3 {
+		http.Error(w, "bad request", 404)
+		return
+	}
+	gridkey := parts[2]
+	k := datastore.NewKey(ctx, "Grid", gridkey, 0, nil)
+
+	cq := datastore.NewQuery("Col").Filter("Grid=", k).Order("DisplayOrder")
+	cols := make([]Col, 0, 100)
+	_, err := cq.GetAll(ctx, &cols)
+	if err != nil {
+		// handle the error
+		ctx.Errorf("cols fetch: %v", err)
+	}
+	var maxOrder = 0
+	for _, col := range cols {
+		if col.DisplayOrder > maxOrder {
+			maxOrder = col.DisplayOrder
+		}
+	}
+
+	ckey := datastore.NewKey(ctx, "Col", newKey(), 0, nil)
+	col := new(Col)
+	col.Grid = k
+	col.Label = strings.TrimSpace(r.FormValue("label"))
+	col.DisplayOrder = maxOrder + 1
+	_, err = datastore.Put(ctx, ckey, col)
+	ctx.Errorf("added col %v", err)
+
+	http.Redirect(w, r, "/grid/"+gridkey, http.StatusFound)
 }
 
 func cellUpdate(w http.ResponseWriter, r *http.Request) {
@@ -322,6 +394,13 @@ var gridKey = "{{.GridKey}}";
 <body>
 <h2>{{.Grid.Title}}</h2>
 <script src="/media/js/griddo.js"></script>
+
+	<form action="/add_row/{{.GridKey}}" method="post">
+  <input type="text" name="label" placeholder="row label"/><input type="submit" value="add row" />
+	</form>
+	<form action="/add_col/{{.GridKey}}" method="post">
+  <input type="text" name="label" placeholder="column label"/><input type="submit" value="add column" />
+	</form>
 </body>
 </html>
 
