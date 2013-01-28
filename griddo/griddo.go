@@ -26,14 +26,23 @@ type Row struct {
 	DisplayOrder int
 }
 
+func (r Row) Index() int {
+	return r.DisplayOrder + 1
+}
+
 type Col struct {
 	Grid         *datastore.Key
 	Label        string
 	DisplayOrder int
 }
 
+func (c Col) Index() int {
+	return c.DisplayOrder + 1
+}
+
 type Cell struct {
 	Value int
+	Grid  *datastore.Key
 	Row   *datastore.Key
 	Col   *datastore.Key
 	//	Created  time.Time
@@ -105,7 +114,8 @@ func cellUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cellq := datastore.NewQuery(
-		"Cell").Filter("Row=", rkeys[0]).Filter("Col=", ckeys[0]).Limit(1)
+		"Cell").Filter("Grid=", k).Filter(
+		"Row=", rkeys[0]).Filter("Col=", ckeys[0]).Limit(1)
 	cells := make([]Cell, 0, 1)
 	cellkeys, err := cellq.GetAll(ctx, &cells)
 	if err != nil {
@@ -131,6 +141,7 @@ func cellUpdate(w http.ResponseWriter, r *http.Request) {
 		if v != 0 {
 			ck := datastore.NewKey(ctx, "Cell", newKey(), 0, nil)
 			cell := new(Cell)
+			cell.Grid = k
 			cell.Row = rkeys[0]
 			cell.Col = ckeys[0]
 			cell.Value = v
@@ -187,11 +198,20 @@ func newGrid(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/grid/"+key, http.StatusFound)
 }
 
+type vcell struct {
+	Cell Cell
+	Row  Row
+	Col  Col
+	RN   int
+	CN   int
+}
+
 type gridPage struct {
 	Grid    *Grid
 	GridKey string
 	Rows    []Row
 	Cols    []Col
+	Cells   []vcell
 }
 
 func showGrid(w http.ResponseWriter, r *http.Request) {
@@ -212,23 +232,47 @@ func showGrid(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rq := datastore.NewQuery("Row").Filter("Grid=", k)
+	rowmap := make(map[string]Row)
+	rq := datastore.NewQuery("Row").Filter("Grid=", k).Order("DisplayOrder")
 	rows := make([]Row, 0, 100)
-	if _, err := rq.GetAll(c, &rows); err != nil {
+	rkeys, err := rq.GetAll(c, &rows)
+	if err != nil {
 		// handle the error
 		c.Errorf("rows fetch: %v", err)
 	}
+	for i, rk := range rkeys {
+		rowmap[rk.String()] = rows[i]
+	}
 
-	cq := datastore.NewQuery("Col").Filter("Grid=", k)
+	colmap := make(map[string]Col)
+	cq := datastore.NewQuery("Col").Filter("Grid=", k).Order("DisplayOrder")
 	cols := make([]Col, 0, 100)
-	if _, err := cq.GetAll(c, &cols); err != nil {
+	ckeys, err := cq.GetAll(c, &cols)
+	if err != nil {
 		// handle the error
 		c.Errorf("cols fetch: %v", err)
+	}
+	for i, ck := range ckeys {
+		colmap[ck.String()] = cols[i]
+	}
+
+	cellq := datastore.NewQuery("Cell").Filter("Grid=", k).Limit(100 * 100)
+	cells := make([]Cell, 0, 100*100)
+	vcells := make([]vcell, 0, 100*100)
+
+	if _, err := cellq.GetAll(c, &cells); err != nil {
+		c.Errorf("cells fetch: %v", err)
+	}
+
+	for _, cell := range cells {
+		var fr = rowmap[cell.Row.String()]
+		var fc = colmap[cell.Col.String()]
+		vcells = append(vcells, vcell{cell, fr, fc, fr.DisplayOrder, fc.DisplayOrder})
 	}
 
 	var gridTemplate = template.Must(template.New("grid").Parse(gridTmpl))
 
-	err = gridTemplate.Execute(w, gridPage{g, gridkey, rows, cols})
+	err = gridTemplate.Execute(w, gridPage{g, gridkey, rows, cols, vcells})
 	if err != nil {
 		c.Errorf("gridTemplate: %v", err)
 	}
@@ -262,12 +306,14 @@ line.active {
 <script>
 var rows = [];
 {{range .Rows}}
-rows.push("{{.Label}}");
-{{end}}
+rows.push("{{.Label}}");{{end}}
 var columns = [];
 {{range .Cols}}
-columns.push("{{.Label}}");
-{{end}}
+columns.push("{{.Label}}");{{end}}
+
+var cells = [];
+{{range .Cells}}
+cells.push({"row": {{.Row.Index}}, "col": {{.Col.Index}}, "value": {{.Cell.Value}}});{{end}}
 
 var gridKey = "{{.GridKey}}";
 </script>

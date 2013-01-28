@@ -148,6 +148,7 @@ function update() {
 				.text(function(d, i) { return columns[i]; });
 
 //		griddata.links.forEach(setCell);
+		cells.forEach(setCell);
 };
 
 
@@ -155,9 +156,9 @@ function update() {
 
 update();
 
-setInterval(function () {
-		var row = parseInt(nr * Math.random(), 10);
-		var col = parseInt(nc * Math.random(), 10);
-		var v = parseInt(5 * Math.random());
-		setCell({"row": row, "col": col, "value": v});
-}, 3000);
+//setInterval(function () {
+//		var row = parseInt(nr * Math.random(), 10);
+//		var col = parseInt(nc * Math.random(), 10);
+//		var v = parseInt(5 * Math.random());
+//		setCell({"row": row, "col": col, "value": v});
+//}, 3000);
